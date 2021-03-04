@@ -1,0 +1,81 @@
+const express = require('express')
+const MongoClient = require('mongodb').MongoClient
+const ObjectId = require('mongodb').ObjectId
+const app = express()
+
+app.use(express.json())
+
+const url = 'mongodb+srv://Superadmin:0940656639zz@cluster0.ybhli.mongodb.net/buflix?retryWrites=true&w=majority'
+
+const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true })
+let db, booksCollection
+
+async function connect(){   
+    await client.connect()
+    db = client.db('buflix')
+    booksCollection = db.collection('books')
+}
+connect()
+
+
+
+app.get('/books', async (req, res) => { //API คือ 1 ฟังก์ชั่น
+    //input
+
+    //process
+    const cursor = await booksCollection.find({})
+    const result = await cursor.toArray()
+
+
+    //output 
+    res.status(200).json(result)
+})
+
+app.get('/books/:id', async(req, res) =>{
+    //input
+    let id = req.params.id
+
+    //process
+    const book = await booksCollection.findOne({ _id: ObjectId(id) })
+    //movies is attribute array
+
+    //output
+    res.status(200).json(book) 
+})
+
+    //การกำหนดค่าของ http status code สำคัญ ต้องคิดว่าจะรีเทิร์นค่ากลับไปเป็นอะไรกรณีที่ทำงานเสร็จ
+
+// `GET /movies` <-- path ที่เอาไว้เรียก API 
+// Method POST การสร้างข้อมูล Status code 201
+
+app.post('/books', async(req, res) => {
+    //input
+    let newtitle = req.body.title
+    let newprice =req.body.price
+    let newunit = req.body.unit
+    let newisbn = req.body.isbn
+    // let newimageurl = req.body.imageurl
+
+    //Key: value
+    let newBook ={
+        title: newtitle,
+        price: newprice,
+        unit: newunit,
+        isbn: newisbn,
+        // imageurl: imageurl
+        
+    }
+    let bookID = 0
+
+    //process
+    const result = await booksCollection.insertOne(newBook)
+    // movies.push(newMovie)
+    //n-1
+    // movieID = movies.length -1
+    bookID = result.insertedId
+
+    //output 
+    res.status(201).json(booksID)
+})
+const port = 3000
+app.listen(port, () => console.log(`Server started at ${port}`))
